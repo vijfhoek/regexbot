@@ -1,9 +1,7 @@
 from aiotg import Bot, Chat
-import logging
 import asyncio
-import aiohttp
-import os
 import json
+import os
 import regex as re
 
 bot = Bot(api_token=os.environ['API_KEY'])
@@ -69,8 +67,6 @@ async def main():
     await bot.loop()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(main())
