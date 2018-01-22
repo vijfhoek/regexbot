@@ -53,7 +53,7 @@ async def doit(chat, match):
 
         # Substitute the text
         try:
-            s, i = re.subn(fr, to, original)
+            s, i = re.subn(fr, to, original, count=count, flags=flags)
             if i > 0:
                 return (await Chat.from_message(bot, message).reply(s))['result']
         except Exception as e:
