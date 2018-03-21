@@ -1,14 +1,13 @@
 from aiotg import Bot, Chat
 import asyncio
-import json
 import os
 import regex as re
-from collections import defaultdict
+from collections import defaultdict, deque
 from pprint import pprint
 
 bot = Bot(api_token=os.environ['API_KEY'])
 
-last_msgs = defaultdict(list)
+last_msgs = defaultdict(lambda: deque(maxlen=10))
 
 
 def find_original(message):
@@ -43,6 +42,14 @@ async def doit(chat, match):
             await chat.reply('unknown flag: {}'.format(f))
             return
 
+    async def substitute(original, msg):
+        try:
+            s, i = re.subn(fr, to, original, count=count, flags=flags)
+            if i > 0:
+                return (await Chat.from_message(bot, msg).reply(s))['result']
+        except Exception as e:
+            await chat.reply('u dun goofed m8: ' + str(e))
+
     # Handle replies
     if 'reply_to_message' in chat.message:
         # Try to find the original message text
@@ -51,38 +58,20 @@ async def doit(chat, match):
         if not original:
             return
 
-        # Substitute the text
-        try:
-            s, i = re.subn(fr, to, original, count=count, flags=flags)
-            if i > 0:
-                return (await Chat.from_message(bot, message).reply(s))['result']
-        except Exception as e:
-            await chat.reply('u dun goofed m8: ' + str(e))
-            return
+        return await substitute(original, message)
 
-    # Try matching the last few messages
-    global last_msgs
-    if chat.id not in last_msgs:
-        return
-
-    for msg in reversed(last_msgs[chat.id]):
-        try:
+    else:
+        # Try matching the last few messages
+        for msg in reversed(last_msgs[chat.id]):
             original = find_original(msg)
             if not original:
                 continue
 
-            s, i = re.subn(fr, to, original, count=count, flags=flags)
-            if i > 0:
-                return (await Chat.from_message(bot, msg).reply(s))['result']
-        except Exception as e:
-            await chat.reply('u dun goofed m8: ' + str(e))
-            return
+            return await substitute(original, msg)
 
 
 @bot.command(r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?')
 async def test(chat, match):
-    global last_msgs
-
     msg = await doit(chat, match)  
     if msg:
         last_msgs[chat.id].append(msg)
@@ -92,14 +81,7 @@ async def test(chat, match):
 @bot.command(r'(.*)')
 @bot.handle('photo')
 async def msg(chat, match):
-    global last_msgs
-
-    if chat.id not in last_msgs:
-        last_msgs[chat.id] = []
-
     last_msgs[chat.id].append(chat.message)
-    if len(last_msgs[chat.id]) > 10:
-        last_msgs[chat.id] = last_msgs[chat.id][-10:]
 
 
 async def main():
@@ -112,4 +94,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         bot.stop()
 
-        
