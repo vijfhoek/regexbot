@@ -67,12 +67,14 @@ async def doit(chat, match):
             if not original:
                 continue
 
-            return await substitute(original, msg)
+            result = await substitute(original, msg)
+            if result is not None:
+                return result
 
 
 @bot.command(r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?')
 async def test(chat, match):
-    msg = await doit(chat, match)  
+    msg = await doit(chat, match)
     if msg:
         last_msgs[chat.id].append(msg)
     pprint(last_msgs[chat.id])
@@ -93,4 +95,3 @@ if __name__ == '__main__':
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         bot.stop()
-
