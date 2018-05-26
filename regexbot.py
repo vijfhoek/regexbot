@@ -4,9 +4,9 @@ import os
 import regex as re
 from collections import defaultdict, deque
 from pprint import pprint
+from datetime import datetime, timedelta
 
 bot = Bot(api_token=os.environ['API_KEY'])
-
 last_msgs = defaultdict(lambda: deque(maxlen=10))
 
 
@@ -18,7 +18,13 @@ def find_original(message):
 
     return None
 
+
 async def doit(chat, match):
+    date = datetime.fromtimestamp(chat.message['date'])
+    if date < datetime.now() - timedelta(minutes=5):
+        print('ignoring old message from', date)
+        return
+
     fr = match.group(1)
     to = match.group(2)
     to = to.replace('\\/', '/')
