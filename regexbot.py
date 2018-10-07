@@ -30,7 +30,7 @@ async def doit(chat, match):
     to = to.replace('\\/', '/')
     try:
         fl = match.group(3)
-        if fl == None:
+        if fl is None:
             fl = ''
         fl = fl[1:]
     except IndexError:
@@ -42,6 +42,8 @@ async def doit(chat, match):
     for f in fl:
         if f == 'i':
             flags |= re.IGNORECASE
+        elif f == 'm':
+            flags |= re.MULTILINE
         elif f == 'g':
             count = 0
         else:
@@ -49,33 +51,33 @@ async def doit(chat, match):
             return
 
     async def substitute(original, msg):
-        try:
-            s, i = re.subn(fr, to, original, count=count, flags=flags)
-            if i > 0:
-                return (await Chat.from_message(bot, msg).reply(s))['result']
-        except Exception as e:
-            await chat.reply('u dun goofed m8: ' + str(e))
+        s, i = re.subn(fr, to, original, count=count, flags=flags)
+        if i > 0:
+            return (await Chat.from_message(bot, msg).reply(s))['result']
 
-    # Handle replies
-    if 'reply_to_message' in chat.message:
-        # Try to find the original message text
-        message = chat.message['reply_to_message']
-        original = find_original(message)
-        if not original:
-            return
-
-        return await substitute(original, message)
-
-    else:
-        # Try matching the last few messages
-        for msg in reversed(last_msgs[chat.id]):
-            original = find_original(msg)
+    try:
+        if 'reply_to_message' in chat.message:
+            # Handle replies
+            # Try to find the original message text
+            message = chat.message['reply_to_message']
+            original = find_original(message)
             if not original:
-                continue
+                return
 
-            result = await substitute(original, msg)
-            if result is not None:
-                return result
+            return await substitute(original, message)
+
+        else:
+            # Try matching the last few messages
+            for msg in reversed(last_msgs[chat.id]):
+                original = find_original(msg)
+                if not original:
+                    continue
+
+                result = await substitute(original, msg)
+                if result is not None:
+                    return result
+    except Exception as e:
+        await chat.reply('fuck me\n' + str(e))
 
 
 @bot.command(r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?')

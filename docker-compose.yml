@@ -1,6 +1,7 @@
-version: '3'
+version: '2'
 services:
   bot:
     build: .
     environment:
       - 'API_KEY'
+    restart: always
