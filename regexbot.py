@@ -44,6 +44,8 @@ async def doit(chat, match):
             flags |= re.IGNORECASE
         elif f == 'm':
             flags |= re.MULTILINE
+        elif f == 's':
+            flags |= re.DOTALL
         elif f == 'g':
             count = 0
         else:
