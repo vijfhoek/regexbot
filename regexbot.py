@@ -1,7 +1,7 @@
-from aiotg import Bot, Chat
 import asyncio
 import os
-import regex as re
+import re
+from aiotg import Bot, Chat
 from collections import defaultdict, deque
 from pprint import pprint
 from datetime import datetime, timedelta
