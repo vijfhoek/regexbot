@@ -25,6 +25,10 @@ async def doit(chat, match):
         print('ignoring old message from', date)
         return
 
+    if 'forward_date' in chat.message:
+        print('ignoring forward')
+        return
+
     fr = match.group(1)
     to = match.group(2)
     to = (to
