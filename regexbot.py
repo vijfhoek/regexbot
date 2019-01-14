@@ -1,10 +1,13 @@
 import asyncio
+import logging
 import os
 import re
 from aiotg import Bot, Chat
 from collections import defaultdict, deque
 from pprint import pprint
 from datetime import datetime, timedelta
+
+logging.basicConfig(level=logging.WARNING)
 
 bot = Bot(api_token=os.environ['API_KEY'])
 last_msgs = defaultdict(lambda: deque(maxlen=10))
@@ -22,11 +25,11 @@ def find_original(message):
 async def doit(chat, match):
     date = datetime.fromtimestamp(chat.message['date'])
     if date < datetime.now() - timedelta(minutes=5):
-        print('ignoring old message from', date)
+        logging.info('ignoring old message from %s', date)
         return
 
     if 'forward_date' in chat.message:
-        print('ignoring forward')
+        logging.debug('ignoring forward')
         return
 
     fr = match.group(1)
