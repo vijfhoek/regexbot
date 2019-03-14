@@ -50,6 +50,8 @@ async def doit(chat, match):
             flags |= re.DOTALL
         elif f == 'g':
             count = 0
+        elif f == 'x':
+            flags |= re.VERBOSE
         else:
             await chat.reply('unknown flag: {}'.format(f))
             return
