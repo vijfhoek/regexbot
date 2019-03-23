@@ -41,7 +41,7 @@ async def doit(chat, match):
     # Build Python regex flags
     count = 1
     flags = 0
-    for f in fl:
+    for f in fl.lower():
         if f == 'i':
             flags |= re.IGNORECASE
         elif f == 'm':
