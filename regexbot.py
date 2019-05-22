@@ -97,7 +97,12 @@ async def test(chat, match):
 @bot.command(r'(.*)')
 @bot.handle('photo')
 async def msg(chat, match):
-    last_msgs[chat.id].append(chat.message)
+    if getattr(chat.message, 'edit_date', None):
+        for i, msg in enumerate(last_msgs[chat.id]):
+            if msg.message_id == chat.message.message_id:
+                last_msgs[chat.id][i] = chat.message
+    else:
+        last_msgs[chat.id].append(chat.message)
 
 
 async def main():
