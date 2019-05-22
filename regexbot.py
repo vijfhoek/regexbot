@@ -4,6 +4,8 @@ from collections import defaultdict, deque
 
 from telethon import TelegramClient, events
 
+SED_PATTERN = r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?'
+
 bot = TelegramClient(None, 6, 'eb06d4abfb49dc3eeb1aeb98ae0f581e')
 bot.parse_mode = None
 
@@ -67,7 +69,8 @@ async def doit(message, match):
         await message.reply('fuck me\n' + str(e))
 
 
-@bot.on(events.NewMessage(pattern=r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?'))
+@bot.on(events.NewMessage(pattern=SED_PATTERN))
+@bot.on(events.MessageEdited(pattern=SED_PATTERN))
 async def sed(event):
     message = await doit(event.message, event.pattern_match)
     if message:
@@ -77,6 +80,13 @@ async def sed(event):
 @bot.on(events.NewMessage)
 async def catch_all(event):
     last_msgs[event.chat_id].append(event.message)
+
+
+@bot.on(events.MessageEdited)
+async def catch_edit(event):
+    for i, message in enumerate(last_msgs[event.chat_id]):
+        if message.id == event.id:
+            last_msgs[event.chat_id][i] = event.message
 
 
 if __name__ == '__main__':
