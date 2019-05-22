@@ -44,7 +44,7 @@ async def doit(message, match):
             await message.reply('unknown flag: {}'.format(f))
             return
 
-    async def substitute(m):
+    def substitute(m):
         if not m.raw_text:
             return None
 
