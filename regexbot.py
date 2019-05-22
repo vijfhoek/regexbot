@@ -76,6 +76,9 @@ async def sed(event):
     if message:
         last_msgs[event.chat_id].append(message)
 
+    # Don't save sed commands or we would be able to sed those
+    raise events.StopPropagation
+
 
 @bot.on(events.NewMessage)
 async def catch_all(event):
