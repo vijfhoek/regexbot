@@ -1,30 +1,16 @@
-import asyncio
 import os
 import re
-from aiotg import Bot, Chat
 from collections import defaultdict, deque
-from pprint import pprint
-from datetime import datetime, timedelta
 
-bot = Bot(api_token=os.environ['API_KEY'])
+from telethon import TelegramClient, events
+
+bot = TelegramClient(None, 6, 'eb06d4abfb49dc3eeb1aeb98ae0f581e')
+bot.parse_mode = None
+
 last_msgs = defaultdict(lambda: deque(maxlen=10))
 
 
-def find_original(message):
-    if 'text' in message:
-        return message['text']
-    elif 'caption' in message:
-        return message['caption']
-
-    return None
-
-
-async def doit(chat, match):
-    date = datetime.fromtimestamp(chat.message['date'])
-    if date < datetime.now() - timedelta(minutes=5):
-        print('ignoring old message from', date)
-        return
-
+async def doit(message, match):
     fr = match.group(1)
     to = match.group(2)
     to = (to
@@ -53,59 +39,46 @@ async def doit(chat, match):
         elif f == 'x':
             flags |= re.VERBOSE
         else:
-            await chat.reply('unknown flag: {}'.format(f))
+            await message.reply('unknown flag: {}'.format(f))
             return
 
-    async def substitute(original, msg):
-        s, i = re.subn(fr, to, original, count=count, flags=flags)
+    async def substitute(m):
+        if not m.raw_text:
+            return None
+
+        s, i = re.subn(fr, to, m.raw_text, count=count, flags=flags)
         if i > 0:
-            return (await Chat.from_message(bot, msg).reply(s))['result']
+            return s
 
     try:
-        if 'reply_to_message' in chat.message:
-            # Handle replies
-            # Try to find the original message text
-            message = chat.message['reply_to_message']
-            original = find_original(message)
-            if not original:
-                return
-
-            return await substitute(original, message)
-
+        substitution = None
+        if message.is_reply:
+            substitution = substitute(await message.get_reply_message())
         else:
-            # Try matching the last few messages
-            for msg in reversed(last_msgs[chat.id]):
-                original = find_original(msg)
-                if not original:
-                    continue
+            for msg in reversed(last_msgs[message.chat_id]):
+                substitution = substitute(msg)
+                if substitution is not None:
+                    break
 
-                result = await substitute(original, msg)
-                if result is not None:
-                    return result
+        if substitution is not None:
+            await message.reply(substitution)
+
     except Exception as e:
-        await chat.reply('fuck me\n' + str(e))
+        await message.reply('fuck me\n' + str(e))
 
 
-@bot.command(r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?')
-async def test(chat, match):
-    msg = await doit(chat, match)
-    if msg:
-        last_msgs[chat.id].append(msg)
-    pprint(last_msgs[chat.id])
+@bot.on(events.NewMessage(pattern=r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?'))
+async def sed(event):
+    message = await doit(event.message, event.pattern_match)
+    if message:
+        last_msgs[event.chat_id].append(message)
 
 
-@bot.command(r'(.*)')
-@bot.handle('photo')
-async def msg(chat, match):
-    last_msgs[chat.id].append(chat.message)
+@bot.on(events.NewMessage)
+async def catch_all(event):
+    last_msgs[event.chat_id].append(event.message)
 
-
-async def main():
-    await bot.loop()
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(main())
-    except KeyboardInterrupt:
-        bot.stop()
+    with bot.start(bot_token=os.environ['API_KEY']):
+        bot.run_until_disconnected()

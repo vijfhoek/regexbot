@@ -1,1 +1,1 @@
-aiotg
+telethon
