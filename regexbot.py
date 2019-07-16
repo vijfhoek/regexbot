@@ -27,7 +27,7 @@ async def doit(chat, match):
 
     fr = match.group(1)
     to = match.group(2)
-    to = re.sub(r'([^\\]|^)\\0', '\1\\g<0>', to)
+    to = re.sub(r'(?<!\\)\\0', '\\g<0>', to)
     try:
         fl = match.group(3)
         if fl is None:
