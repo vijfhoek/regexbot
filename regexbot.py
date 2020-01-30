@@ -1,5 +1,5 @@
 import os
-import re
+import regex as re
 from collections import defaultdict, deque
 
 from telethon import TelegramClient, events
