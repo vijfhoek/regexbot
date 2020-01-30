@@ -53,17 +53,19 @@ async def doit(message, match):
             return s
 
     try:
+        msg = None
         substitution = None
         if message.is_reply:
-            substitution = substitute(await message.get_reply_message())
+            msg = await message.get_reply_message()
+            substitution = substitute(msg)
         else:
             for msg in reversed(last_msgs[message.chat_id]):
                 substitution = substitute(msg)
                 if substitution is not None:
-                    break
+                    break  # msg is also set
 
         if substitution is not None:
-            await message.reply(substitution)
+            await msg.reply(substitution)
 
     except Exception as e:
         await message.reply('fuck me\n' + str(e))
