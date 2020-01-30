@@ -1,6 +1,6 @@
 import asyncio
 import os
-import re
+import regex as re
 from aiotg import Bot, Chat
 from collections import defaultdict, deque
 from pprint import pprint
