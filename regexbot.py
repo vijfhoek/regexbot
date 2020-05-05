@@ -5,6 +5,7 @@ from collections import defaultdict, deque
 from telethon import TelegramClient, events
 
 SED_PATTERN = r'^s/((?:\\/|[^/])+)/((?:\\/|[^/])*)(/.*)?'
+GROUP0_RE = re.compile(r'(?<!\\)((?:\\\\)*)\\0')
 
 bot = TelegramClient(None, 6, 'eb06d4abfb49dc3eeb1aeb98ae0f581e')
 bot.parse_mode = None
@@ -12,12 +13,19 @@ bot.parse_mode = None
 last_msgs = defaultdict(lambda: deque(maxlen=10))
 
 
-async def doit(message, match):
-    fr = match.group(1)
+def cleanup_pattern(match):
+    from_ = match.group(1)
     to = match.group(2)
-    to = (to
-          .replace('\\/', '/')
-          .replace('\\0', '\\g<0>'))
+
+    to = to.replace('\\/', '/')
+    to = GROUP0_RE.sub(r'\1\\g<0>', to)
+
+    return from_, to
+
+
+async def doit(message, match):
+    fr, to = cleanup_pattern(match)
+
     try:
         fl = match.group(3)
         if fl is None:
