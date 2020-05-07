@@ -73,7 +73,7 @@ async def doit(message, match):
                     break  # msg is also set
 
         if substitution is not None:
-            await msg.reply(substitution)
+            return await msg.reply(substitution)
 
     except Exception as e:
         await message.reply('fuck me\n' + str(e))
