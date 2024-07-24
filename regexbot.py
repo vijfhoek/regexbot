@@ -102,9 +102,14 @@ async def catch_edit(event):
             last_msgs[event.chat_id][i] = event.message
 
 
-@bot.on(events.NewMessage(pattern=r'\/privacy'))
+@bot.on(events.NewMessage(pattern=r"\/privacy"))
 async def privacy(event):
-    await event.reply('This bot does not collect any more user data, except a short backlog of messages to perform regex substitutions on them. These are not recorded, logged or stored anywhere.')
+    await event.reply(
+        "This bot does not collect or process any user data, apart from a short "
+        "backlog of messages to perform regex substitutions on. These are not "
+        "logged or stored anywhere, and can not be accessed by the bot's "
+        "administrator in any way."
+    )
 
 
 if __name__ == '__main__':
