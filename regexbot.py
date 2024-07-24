@@ -102,6 +102,11 @@ async def catch_edit(event):
             last_msgs[event.chat_id][i] = event.message
 
 
+@bot.on(events.NewMessage(pattern=r'\/privacy'))
+async def privacy(event):
+    await event.reply('This bot does not collect any more user data, except a short backlog of messages to perform regex substitutions on them. These are not recorded, logged or stored anywhere.')
+
+
 if __name__ == '__main__':
     with bot.start(bot_token=os.environ['API_KEY']):
         bot.run_until_disconnected()
