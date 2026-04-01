@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.10"
 telethon = "^1.41.2"
 regex = "^2025.9.18"
-aiohttp = "^3.13.3"
+aiohttp = "^3.13.4"
 prometheus-client = "^0.23.1"
 
 
