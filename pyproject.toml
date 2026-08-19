@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-telethon = "^1.41.2"
+telethon = "^1.44.0"
 regex = "^2025.9.18"
 aiohttp = "^3.13.3"
 prometheus-client = "^0.23.1"
